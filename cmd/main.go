@@ -1,25 +1,49 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 
 	"github.com/jakoubek/go-recordlocator"
 )
 
 var recloc *recordlocator.RecordLocator
 
+var (
+	cli struct {
+		number int64
+		rl     string
+	}
+)
+
 func main() {
-	fmt.Println("Test for Recordlocator")
+
+	flag.Int64Var(&cli.number, "number", 0, "Number to be encoded")
+	flag.StringVar(&cli.rl, "rl", "", "Recordlocator to be decoded")
+
+	flag.Parse()
+
 	recloc = recordlocator.NewRecordLocator()
 
-	str, _ := recloc.Encode(5325)
-	fmt.Printf("The number %d encodes to %s\n", 5325, str)
+	if cli.number > 0 {
 
-	nr, _ := recloc.Decode("78G")
-	fmt.Printf("The recordlocator %s decodes back to %d.\n", "78G", nr)
+		rl, err := recloc.Encode(cli.number)
+		if err != nil {
+			log.Fatalf("Error encoding number %d to a recordlocator\n", cli.number)
+		}
+		fmt.Printf("%d => %s\n", cli.number, rl)
 
-	for i := 1; i <= 100; i++ {
-		encodeAndDecodeBack(int64(i))
+	}
+
+	if cli.rl != "" {
+
+		number, err := recloc.Decode(cli.rl)
+		if err != nil {
+			log.Fatalf("Error decoding number recordlocator %s back to a number\n", cli.rl)
+		}
+		fmt.Printf("%s => %d\n", cli.rl, number)
+
 	}
 
 }
